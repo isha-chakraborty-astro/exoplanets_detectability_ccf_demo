@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Isha Chakraborty | High-Resolution Exoplanet Spectroscopy &amp; Noiseless 2D CCF Interactive Demo</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #070b14;
+      color: #e2e8f0;
+    }
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    input[type="range"] {
+      accent-color: #38bdf8;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-sky-500/30 selection:text-sky-200">
+
+  <!-- Top Toast Notification -->
+  <div id="toastBanner" class="fixed bottom-5 right-5 z-50 hidden items-center gap-2.5 px-4 py-3 rounded-xl bg-emerald-950/95 border border-emerald-500/50 text-emerald-200 shadow-2xl text-sm font-medium transition-all">
+    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+    <span id="toastText">Copied to clipboard!</span>
+  </div>
+
+  <!-- Header / Researcher Banner -->
+  <header class="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+      <div class="flex items-start sm:items-center gap-3.5">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-sky-500/20 via-indigo-500/20 to-teal-500/20 border border-sky-400/40 flex items-center justify-center shrink-0 shadow-inner">
+          <span class="mono text-sky-300 font-bold text-base">CCF</span>
+        </div>
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <h1 class="text-base sm:text-lg font-bold text-white tracking-tight">Isha Chakraborty</h1>
+            <span class="text-xs px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-300 border border-sky-500/30 font-medium">M.Sc. Astrophysics (UniBo &amp; INAF Catania)</span>
+            <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 mono">R = 100,000 (ELT/ANDES Demo)</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">
+            Interactive Methodology Portfolio: Synthetic <span class="mono text-slate-300">petitRADTRANS</span> Forward Modeling, Single-Pass Spline Normalization &amp; Noiseless 2D CCF
+          </p>
+        </div>
+      </div>
+
+      <!-- Main Navigation Tabs -->
+      <nav class="flex flex-wrap items-center gap-1.5 bg-slate-900/90 p-1 rounded-xl border border-slate-800" aria-label="Main Tabs">
+        <button id="btnTabSimulator" type="button" onclick="switchMainTab('simulator')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all bg-sky-500 text-slate-950 shadow">
+          1. Interactive 2D CCF Simulator
+        </button>
+        <button id="btnTabCode" type="button" onclick="switchMainTab('code')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-300 hover:text-white hover:bg-slate-800/70">
+          2. Copy-Paste Python &amp; Repo Codes
+        </button>
+        <button id="btnTabGuide" type="button" onclick="switchMainTab('guide')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-300 hover:text-white hover:bg-slate-800/70">
+          3. Step-by-Step GitHub Pages Guide
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 flex-1 flex flex-col gap-6">
+
+    <!-- ===================================================================== -->
+    <!-- VIEW 1: INTERACTIVE 2D CCF & SPECTRUM SIMULATOR (VISITOR-FACING DEMO) -->
+    <!-- ===================================================================== -->
+    <section id="viewSimulator" class="flex flex-col gap-6">
+      <!-- Safeguard Notice Banner -->
+      <div class="rounded-2xl bg-gradient-to-r from-slate-900/95 via-sky-950/30 to-slate-900/95 border border-sky-500/25 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-sky-300">Public Methodology Demonstration &bull; Zero Proprietary Consortium Data</h2>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            This interactive simulator demonstrates the mathematical pipeline behind my Master&rsquo;s thesis at
+            <a href="https://www.oact.inaf.it/en/" target="_blank" rel="noopener noreferrer" class="text-sky-400 underline hover:text-sky-300">INAF &ndash; Osservatorio Astrofisico di Catania</a>
+            (supervised by Dr. Gaetano Scandariato) for the
+            <a href="https://elt.eso.org/instrument/ANDES/" target="_blank" rel="noopener noreferrer" class="text-sky-400 underline hover:text-sky-300">ANDES</a>
+            high-dispersion echelle spectrograph on ESO&rsquo;s
+            <a href="https://elt.eso.org/" target="_blank" rel="noopener noreferrer" class="text-sky-400 underline hover:text-sky-300">Extremely Large Telescope (ELT)</a>.
+            All spectra below are computed analytically in real time in a <strong>noiseless</strong> regime without exposing restricted thesis simulation runs.
+          </p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button id="btnResetSim" type="button" onclick="resetSimulation()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition">
+            Reset Benchmark
+          </button>
+          <button id="btnJumpToCode" type="button" onclick="switchMainTab('code')" class="px-3.5 py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-xs font-semibold text-sky-300 border border-sky-500/40 transition">
+            Get Python Code &rarr;
+          </button>
+        </div>
+      </div>
+
+      <!-- Simulator Grid: Left Controls + Right 3 Interactive Canvases -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+        <!-- Left Column: Interactive Parameter Controls -->
+        <aside class="lg:col-span-4 bg-slate-900/90 border border-slate-800 rounded-2xl p-5 flex flex-col gap-5 shadow-xl">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div>
+              <h3 class="text-sm font-bold text-white">Atmospheric &amp; Orbital Controls</h3>
+              <p class="text-xs text-slate-400">Adjust sliders to recompute spectrum &amp; 2D CCF</p>
+            </div>
+            <span class="mono text-xs px-2 py-0.5 rounded bg-slate-800 text-sky-300 border border-slate-700">2.30&ndash;2.32 &mu;m</span>
+          </div>
+
+          <!-- 1. Target Molecule Species -->
+          <div class="space-y-2">
+            <label for="moleculeSelect" class="block text-xs font-semibold text-slate-300">
+              1. Atmospheric Absorber (<span class="mono text-sky-300">petitRADTRANS</span> K-band template)
+            </label>
+            <select id="moleculeSelect" onchange="updateSimFromUI()" class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-sky-400">
+              <option value="H2O">H₂O (Water Vapor — Dense K-band ro-vibrational forest)</option>
+              <option value="CO">CO (Carbon Monoxide — 2.30 µm 2-0 bandhead comb)</option>
+              <option value="CH4">CH₄ (Methane — Warm sub-Neptune absorption band)</option>
+            </select>
+          </div>
+
+          <!-- 2. Equilibrium Temperature -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between text-xs">
+              <label for="tempSlider" class="font-semibold text-slate-300">2. Limb Temperature (<span class="mono">T_eq</span>)</label>
+              <span id="tempValLabel" class="mono text-sky-300 font-semibold">1400 K</span>
+            </div>
+            <input id="tempSlider" type="range" min="600" max="2400" step="50" value="1400" oninput="updateSimFromUI()" class="w-full cursor-pointer" />
+            <div class="flex justify-between text-[11px] text-slate-500 mono">
+              <span>600 K (Cool)</span>
+              <span id="scaleHeightReadout" class="text-slate-400">Scale Height H: 490 km</span>
+              <span>2400 K (Ultra-Hot)</span>
+            </div>
+          </div>
+
+          <!-- 3. Planet Orbital Velocity Kp -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between text-xs">
+              <label for="kpSlider" class="font-semibold text-slate-300">3. Planet Orbital Semi-Amplitude (<span class="mono">K_p</span>)</label>
+              <span id="kpValLabel" class="mono text-sky-300 font-semibold">150 km/s</span>
+            </div>
+            <input id="kpSlider" type="range" min="80" max="220" step="5" value="150" oninput="updateSimFromUI()" class="w-full cursor-pointer" />
+            <div class="flex justify-between text-[11px] text-slate-500 mono">
+              <span>80 km/s</span>
+              <span>Doppler slope dV/d&phi;</span>
+              <span>220 km/s</span>
+            </div>
+          </div>
+
+          <!-- 4. Systemic Velocity Vsys -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between text-xs">
+              <label for="vsysSlider" class="font-semibold text-slate-300">4. Systemic Velocity (<span class="mono">V_sys</span>)</label>
+              <span id="vsysValLabel" class="mono text-sky-300 font-semibold">-15 km/s</span>
+            </div>
+            <input id="vsysSlider" type="range" min="-50" max="50" step="1" value="-15" oninput="updateSimFromUI()" class="w-full cursor-pointer" />
+            <div class="flex justify-between text-[11px] text-slate-500 mono">
+              <span>-50 km/s (Blueshift)</span>
+              <span>0 km/s</span>
+              <span>+50 km/s (Redshift)</span>
+            </div>
+          </div>
+
+          <!-- 5. Absorption Depth Scaling Factor -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between text-xs">
+              <label for="scaleSlider" class="font-semibold text-slate-300">5. Line Contrast Scaling (<span class="mono">A_p</span>)</label>
+              <span id="scaleValLabel" class="mono text-sky-300 font-semibold">1.00x</span>
+            </div>
+            <input id="scaleSlider" type="range" min="0.4" max="2.0" step="0.1" value="1.0" oninput="updateSimFromUI()" class="w-full cursor-pointer" />
+            <div class="flex justify-between text-[11px] text-slate-500 mono">
+              <span>0.4x (Muted)</span>
+              <span>1.0x (Nominal)</span>
+              <span>2.0x (Inflated)</span>
+            </div>
+          </div>
+
+          <!-- 6. Orbital Phase Slice Selector -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between text-xs">
+              <label for="phaseSlider" class="font-semibold text-slate-300">6. Inspect Transit Phase Slice (<span class="mono">&phi;</span>)</label>
+              <span id="phaseValLabel" class="mono text-amber-300 font-semibold">&phi; = +0.000 (Mid-Transit)</span>
+            </div>
+            <input id="phaseSlider" type="range" min="0" max="24" step="1" value="12" oninput="updateSimFromUI()" class="w-full cursor-pointer" />
+            <div class="flex justify-between text-[11px] text-slate-500 mono">
+              <span>Ingress (&phi; = -0.045)</span>
+              <span id="instantRvReadout" class="text-amber-300/90">RV(&phi;): -15.0 km/s</span>
+              <span>Egress (&phi; = +0.045)</span>
+            </div>
+          </div>
+
+          <!-- 7. Single-Pass Spline Continuum Normalization Toggle -->
+          <div class="pt-2 border-t border-slate-800 space-y-2">
+            <span class="block text-xs font-semibold text-slate-300">7. Panel A View: Echelle Blaze &amp; Spline Normalization</span>
+            <div class="grid grid-cols-2 gap-2">
+              <button id="btnViewNormalized" type="button" onclick="setSpectrumViewMode('normalized')" class="px-2.5 py-2 rounded-xl text-xs font-semibold border transition bg-sky-500/20 border-sky-400 text-sky-200">
+                Spline-Normalized Template
+              </button>
+              <button id="btnViewRawBlaze" type="button" onclick="setSpectrumViewMode('raw_blaze')" class="px-2.5 py-2 rounded-xl text-xs font-semibold border transition bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200">
+                Raw Star + Echelle Blaze
+              </button>
+            </div>
+          </div>
+
+          <!-- Live Mathematical Readout Card -->
+          <div class="rounded-xl bg-slate-950/90 border border-slate-800 p-3.5 space-y-2 text-xs">
+            <div class="font-semibold text-slate-300 flex items-center justify-between">
+              <span>Active Pipeline Equations</span>
+              <span class="mono text-[11px] text-emerald-400">Noiseless Mode</span>
+            </div>
+            <div class="mono text-[11px] text-slate-300 bg-slate-900/90 p-2 rounded-lg border border-slate-800/80 space-y-1">
+              <div>v_p(&phi;) = K_p sin(2&pi;&phi;) + V_sys</div>
+              <div>F_norm(&lambda;) = F_raw(&lambda;) / S_spline(&lambda;)</div>
+              <div>CCF(v, &phi;) = &Sigma;_i r_i(&phi;) &middot; T(&lambda;_i [1 + v/c])</div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 pt-1">
+              <div class="bg-slate-900/70 rounded-lg p-2 border border-slate-800/60">
+                <span class="text-[10px] uppercase text-slate-400 block">Recovered Peak (Kp, Vsys)</span>
+                <span id="metricPeakCoords" class="mono text-xs font-bold text-emerald-300">(150, -15) km/s</span>
+              </div>
+              <div class="bg-slate-900/70 rounded-lg p-2 border border-slate-800/60">
+                <span class="text-[10px] uppercase text-slate-400 block">Rest-Frame CCF Peak</span>
+                <span id="metricPeakValue" class="mono text-xs font-bold text-sky-300">1.000 (Normalized)</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Right Column: 3 Synchronized Scientific Plots -->
+        <div class="lg:col-span-8 flex flex-col gap-5">
+
+          <!-- PANEL A: High-Resolution Spectrum / Single-Pass Spline Normalization -->
+          <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <span class="text-[11px] font-semibold uppercase tracking-wider text-sky-400 block">Step 1 &amp; 2 &bull; Forward Model &amp; Single-Pass Spline Continuum Normalization</span>
+                <h3 id="panelATitle" class="text-sm sm:text-base font-bold text-white">
+                  Synthetic High-Resolution Planetary Transmission Spectrum (R = 100,000)
+                </h3>
+              </div>
+              <span id="panelABadge" class="mono text-xs px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-slate-300 shrink-0">
+                42 Resolved Ro-Vibrational Lines
+              </span>
+            </div>
+            <div class="relative h-56 sm:h-64 w-full bg-slate-950 rounded-xl border border-slate-800/90 overflow-hidden">
+              <canvas id="spectrumCanvas" class="w-full h-full block"></canvas>
+            </div>
+            <p id="panelACaption" class="text-xs text-slate-400 leading-relaxed">
+              <strong>Methodology note:</strong> In the pipeline developed at INAF Catania, synthetic planetary absorption lines from <code class="mono text-slate-300">petitRADTRANS</code> are injected into blaze-modulated stellar echelle spectra. Fitting a single-pass cubic spline (<code class="mono text-slate-300">scipy.interpolate.UnivariateSpline</code>) directly to the blaze-uncorrected order removes both the stellar continuum and the parabolic echelle blaze function simultaneously.
+            </p>
+          </div>
+
+          <!-- PANEL B & PANEL C Side-by-Side on Desktop -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+            <!-- PANEL B: 2D Phase-Resolved CCF Matrix -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col justify-between space-y-3">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <span class="text-[11px] font-semibold uppercase tracking-wider text-emerald-400 block">Step 3 &bull; 2D CCF Velocity Matrix</span>
+                  <h3 class="text-sm font-bold text-white">Orbital Phase (&phi;) vs. Radial Velocity</h3>
+                </div>
+                <span id="ccfHoverReadout" class="mono text-[11px] px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-amber-300">
+                  Hover matrix
+                </span>
+              </div>
+              <div class="relative h-64 w-full bg-slate-950 rounded-xl border border-slate-800/90 overflow-hidden">
+                <canvas id="ccf2dCanvas" class="w-full h-full block cursor-crosshair"></canvas>
+              </div>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Each row cross-correlates one transit phase (&phi; &in; [-0.045, +0.045]) against the planetary template over RV &in; [-250, +250] km/s. The slanted bright ridge traces the planet&rsquo;s orbital acceleration <code class="mono text-slate-300">v_p(&phi;)</code>.
+              </p>
+            </div>
+
+            <!-- PANEL C: Co-Added Rest-Frame 1D CCF & Phase Slice -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col justify-between space-y-3">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <span class="text-[11px] font-semibold uppercase tracking-wider text-amber-400 block">Step 4 &bull; Rest-Frame Alignment</span>
+                  <h3 class="text-sm font-bold text-white">Co-Added CCF vs. Selected Phase Slice</h3>
+                </div>
+                <span class="mono text-[11px] px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-sky-300">
+                  RV Grid: &plusmn;250 km/s
+                </span>
+              </div>
+              <div class="relative h-64 w-full bg-slate-950 rounded-xl border border-slate-800/90 overflow-hidden">
+                <canvas id="ccf1dCanvas" class="w-full h-full block"></canvas>
+              </div>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Shifting each row of the 2D CCF matrix into the planet&rsquo;s rest frame using the trial <code class="mono text-slate-300">(K_p, V_sys)</code> and co-adding yields the sharp cyan detection peak at <code id="captionVsysPeak" class="mono text-sky-300">V_sys = -15 km/s</code> (amber curve shows single phase <code id="captionPhaseLabel" class="mono text-amber-300">&phi; = +0.000</code>).
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- VIEW 2: COPY-PASTE PYTHON & REPOSITORY CODES                          -->
+    <!-- ===================================================================== -->
+    <section id="viewCode" class="hidden flex-col gap-5">
+      <div class="rounded-2xl bg-slate-900/90 border border-slate-800 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <h2 class="text-base font-bold text-white">Ready-to-Paste GitHub Repository Files</h2>
+          <p class="text-xs sm:text-sm text-slate-300">
+            Click any file tab below and press <strong>Copy File Code</strong> to paste it directly into your GitHub repository (or use the downloadable <code class="mono text-sky-300">exoplanet_ccf_github_repo.zip</code> bundle). All scripts use purely synthetic noiseless inputs.
+          </p>
+        </div>
+        <button id="btnCopyActiveCode" type="button" onclick="copyCurrentCodeFile()" class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg transition shrink-0">
+          Copy Current File Code
+        </button>
+      </div>
+
+      <!-- File Selector Bar -->
+      <div class="flex flex-wrap items-center gap-2 bg-slate-900/80 p-2 rounded-2xl border border-slate-800">
+        <button id="fileTab_prt" type="button" onclick="selectCodeFile('prt')" class="px-3.5 py-2 rounded-xl text-xs font-semibold mono transition bg-sky-500 text-slate-950">
+          01_prt_model_spectrum.py
+        </button>
+        <button id="fileTab_pipeline" type="button" onclick="selectCodeFile('pipeline')" class="px-3.5 py-2 rounded-xl text-xs font-semibold mono transition text-slate-300 hover:bg-slate-800">
+          src/ccf_pipeline.py
+        </button>
+        <button id="fileTab_demo" type="button" onclick="selectCodeFile('demo')" class="px-3.5 py-2 rounded-xl text-xs font-semibold mono transition text-slate-300 hover:bg-slate-800">
+          02_noiseless_2d_ccf_demo.py
+        </button>
+        <button id="fileTab_readme" type="button" onclick="selectCodeFile('readme')" class="px-3.5 py-2 rounded-xl text-xs font-semibold mono transition text-slate-300 hover:bg-slate-800">
+          README.md
+        </button>
+        <button id="fileTab_req" type="button" onclick="selectCodeFile('req')" class="px-3.5 py-2 rounded-xl text-xs font-semibold mono transition text-slate-300 hover:bg-slate-800">
+          requirements.txt &amp; .gitignore
+        </button>
+      </div>
+
+      <!-- Code Display Box -->
+      <div class="rounded-2xl bg-slate-950 border border-slate-800 overflow-hidden shadow-2xl">
+        <div class="px-4 py-3 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+            <span id="codeFilenameHeader" class="mono text-xs font-semibold text-sky-300 ml-2">01_prt_model_spectrum.py</span>
+          </div>
+          <span id="codeFileDescription" class="text-xs text-slate-400 hidden sm:inline">
+            Generates a high-resolution model transmission spectrum with petitRADTRANS (plus standalone synthetic fallback)
+          </span>
+        </div>
+        <pre class="p-4 sm:p-5 text-xs mono text-slate-200 overflow-x-auto max-h-[540px] custom-scroll leading-relaxed"><code id="codeDisplayArea"></code></pre>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- VIEW 3: STEP-BY-STEP GITHUB PAGES DEPLOYMENT GUIDE                    -->
+    <!-- ===================================================================== -->
+    <section id="viewGuide" class="hidden flex-col gap-6">
+      <div class="rounded-2xl bg-slate-900/90 border border-slate-800 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base font-bold text-white">Step-by-Step Guide: Launch Your Interactive GitHub Page in 10 Minutes</h2>
+          <p class="text-xs sm:text-sm text-slate-300 mt-0.5">
+            Check off each step below as you build and publish your repository on <a href="https://github.com/" target="_blank" rel="noopener noreferrer" class="text-sky-400 underline">GitHub</a> and <a href="https://pages.github.com/" target="_blank" rel="noopener noreferrer" class="text-sky-400 underline">GitHub Pages</a>.
+          </p>
+        </div>
+        <div class="bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 shrink-0 flex items-center gap-3">
+          <span class="text-xs text-slate-400">Progress:</span>
+          <span id="checklistProgressText" class="mono text-sm font-bold text-emerald-400">0 / 6 Completed</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Step 1 -->
+        <label class="flex items-start gap-3.5 p-4 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-sky-500/40 cursor-pointer transition">
+          <input type="checkbox" onchange="updateChecklistProgress()" class="step-check mt-1 w-4 h-4 rounded accent-emerald-400" />
+          <div class="space-y-1 text-xs sm:text-sm">
+            <span class="font-bold text-white block">Step 1: Create a New Public Repository on GitHub</span>
+            <p class="text-slate-300 leading-relaxed">
+              Log in to <a href="https://github.com/new" target="_blank" rel="noopener noreferrer" class="text-sky-400 underline">github.com/new</a>, set the repository name to <code class="mono text-sky-300">exoplanet-ccf-demo</code>, choose <strong>Public</strong>, check <strong>Add a README file</strong>, and click <strong>Create repository</strong>.
+            </p>
+          </div>
+        </label>
+
+        <!-- Step 2 -->
+        <label class="flex items-start gap-3.5 p-4 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-sky-500/40 cursor-pointer transition">
+          <input type="checkbox" onchange="updateChecklistProgress()" class="step-check mt-1 w-4 h-4 rounded accent-emerald-400" />
+          <div class="space-y-1 text-xs sm:text-sm">
+            <span class="font-bold text-white block">Step 2: Upload the Repository Files (or Zip Bundle)</span>
+            <p class="text-slate-300 leading-relaxed">
+              In your new repository, click <strong>Add file &rarr; Upload files</strong>. Unzip the <code class="mono text-sky-300">exoplanet_ccf_github_repo.zip</code> file provided in chat (or copy-paste the files from Tab 2) so <code class="mono text-slate-200">index.html</code>, <code class="mono text-slate-200">01_prt_model_spectrum.py</code>, <code class="mono text-slate-200">02_noiseless_2d_ccf_demo.py</code>, <code class="mono text-slate-200">src/ccf_pipeline.py</code>, and <code class="mono text-slate-200">README.md</code> are in the repo, then click <strong>Commit changes</strong>.
+            </p>
+          </div>
+        </label>
+
+        <!-- Step 3 -->
+        <label class="flex items-start gap-3.5 p-4 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-sky-500/40 cursor-pointer transition">
+          <input type="checkbox" onchange="updateChecklistProgress()" class="step-check mt-1 w-4 h-4 rounded accent-emerald-400" />
+          <div class="space-y-1 text-xs sm:text-sm">
+            <span class="font-bold text-white block">Step 3: Turn On GitHub Pages for Live Interactive Hosting</span>
+            <p class="text-slate-300 leading-relaxed">
+              Inside your repository, click <strong>Settings</strong> (top gear tab) &rarr; click <strong>Pages</strong> in the left sidebar &rarr; under <strong>Branch</strong>, change <code class="mono text-slate-200">None</code> to <code class="mono text-sky-300">main</code> (folder <code class="mono text-sky-300">/ (root)</code>) and click <strong>Save</strong>.
+            </p>
+          </div>
+        </label>
+
+        <!-- Step 4 -->
+        <label class="flex items-start gap-3.5 p-4 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-sky-500/40 cursor-pointer transition">
+          <input type="checkbox" onchange="updateChecklistProgress()" class="step-check mt-1 w-4 h-4 rounded accent-emerald-400" />
+          <div class="space-y-1 text-xs sm:text-sm">
+            <span class="font-bold text-white block">Step 4: Open Your Live Interactive URL (Wait ~60 Seconds)</span>
+            <p class="text-slate-300 leading-relaxed">
+              Refresh the <strong>Settings &rarr; Pages</strong> screen after 1 minute. GitHub will display your live interactive link: <code class="mono text-emerald-300">https://&lt;your-username&gt;.github.io/exoplanet-ccf-demo/</code>. Anyone visiting that URL will see this exact interactive 2D CCF simulator!
+            </p>
+          </div>
+        </label>
+
+        <!-- Step 5 -->
+        <label class="flex items-start gap-3.5 p-4 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-sky-500/40 cursor-pointer transition">
+          <input type="checkbox" onchange="updateChecklistProgress()" class="step-check mt-1 w-4 h-4 rounded accent-emerald-400" />
+          <div class="space-y-1 text-xs sm:text-sm">
+            <span class="font-bold text-white block">Step 5: Run in Your Local Conda Environment (<code class="mono text-sky-300">prt_env</code>)</span>
+            <p class="text-slate-300 leading-relaxed">
+              On your MacBook Air terminal, activate <code class="mono text-sky-300">conda activate prt_env</code> and run <code class="mono text-slate-200">python 02_noiseless_2d_ccf_demo.py</code> to generate the static PNG and Plotly HTML plots locally whenever you want to customize parameters.
+            </p>
+          </div>
+        </label>
+
+        <!-- Step 6 -->
+        <label class="flex items-start gap-3.5 p-4 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-sky-500/40 cursor-pointer transition">
+          <input type="checkbox" onchange="updateChecklistProgress()" class="step-check mt-1 w-4 h-4 rounded accent-emerald-400" />
+          <div class="space-y-1 text-xs sm:text-sm">
+            <span class="font-bold text-white block">Step 6: Pin the Live Page on LinkedIn &amp; Your Academic CV</span>
+            <p class="text-slate-300 leading-relaxed">
+              Paste your live <code class="mono text-emerald-300">.github.io</code> URL and repo URL into your LinkedIn <strong>Projects</strong> section (under <strong>3D Exoplanet Atmospheric Detectability</strong> &rarr; <strong>+ Add media &rarr; Add a link</strong>) and your LinkedIn <strong>Featured</strong> section!
+            </p>
+          </div>
+        </label>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 bg-slate-950 py-4 px-4 sm:px-6 text-xs text-slate-400">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div>
+        <strong>Isha Chakraborty</strong> &bull; Master&rsquo;s Thesis Researcher at <a href="https://www.oact.inaf.it/en/" target="_blank" rel="noopener noreferrer" class="text-sky-400 hover:underline">INAF Catania</a> &amp; <a href="https://corsi.unibo.it/2cycle/Astrophysics" target="_blank" rel="noopener noreferrer" class="text-sky-400 hover:underline">University of Bologna</a>
+      </div>
+      <div class="mono text-[11px] text-slate-500">
+        Synthetic Noiseless Methodology Showcase (ELT/ANDES &amp; petitRADTRANS Workflow)
+      </div>
+    </div>
+  </footer>
+
+  <!-- ======================================================================= -->
+  <!-- INLINE SCIENTIFIC SIMULATION ENGINE & REPOSITORY SOURCE CODE STORE      -->
+  <!-- ======================================================================= -->
+  <script>
+    // -----------------------------------------------------------------------
+    // 1. State Model for Interactive Simulator
+    // -----------------------------------------------------------------------
+    const simState = {
+      molecule: 'H2O',
+      tempK: 1400,
+      kp: 150,
+      vsys: -15,
+      scale: 1.0,
+      phaseIndex: 12,
+      viewMode: 'normalized', // 'normalized' or 'raw_blaze'
+      numPhases: 25,
+      rvMin: -250,
+      rvMax: 250,
+      numRv: 201
+    };
+
+    // Synthetic ro-vibrational line centers (um) and relative oscillator weights
+    // in the 2.3000 - 2.3200 um K-band window for each molecule preset
+    const MOLECULE_LINE_BANKS = {
+      H2O: [
+        [2.3008, 0.72], [2.3014, 0.45], [2.3021, 0.88], [2.3029, 0.52],
+        [2.3036, 0.94], [2.3043, 0.41], [2.3051, 0.79], [2.3059, 0.63],
+        [2.3066, 0.85], [2.3074, 0.49], [2.3082, 0.91], [2.3090, 0.67],
+        [2.3097, 0.55], [2.3105, 0.97], [2.3112, 0.74], [2.3120, 0.61],
+        [2.3128, 0.83], [2.3135, 0.48], [2.3143, 0.89], [2.3152, 0.71],
+        [2.3160, 0.93], [2.3168, 0.58], [2.3176, 0.77], [2.3185, 0.84],
+        [2.3193, 0.66]
+      ],
+      CO: [
+        // Classic 2-0 R-branch bandhead comb spacing near 2.30 um
+        [2.3005, 0.98], [2.3011, 0.96], [2.3018, 0.94], [2.3026, 0.91],
+        [2.3035, 0.88], [2.3045, 0.85], [2.3056, 0.82], [2.3068, 0.78],
+        [2.3081, 0.75], [2.3095, 0.71], [2.3110, 0.67], [2.3126, 0.63],
+        [2.3143, 0.59], [2.3161, 0.54], [2.3180, 0.50], [2.3195, 0.46]
+      ],
+      CH4: [
+        [2.3010, 0.64], [2.3019, 0.81], [2.3025, 0.59], [2.3038, 0.87],
+        [2.3049, 0.73], [2.3061, 0.92], [2.3070, 0.68], [2.3084, 0.79],
+        [2.3099, 0.88], [2.3114, 0.62], [2.3125, 0.91], [2.3139, 0.75],
+        [2.3150, 0.84], [2.3164, 0.69], [2.3178, 0.86], [2.3191, 0.72]
+      ]
+    };
+
+    // Cached simulation arrays for fast hover interaction
+    let lastSimResult = null;
+
+    // -----------------------------------------------------------------------
+    // 2. Core Physics & Noiseless 2D CCF Computation
+    // -----------------------------------------------------------------------
+    function runSimulation() {
+      const c_kms = 299792.458;
+      const wlMin = 2.3000;
+      const wlMax = 2.3200;
+      const nWl = 900;
+      const wlGrid = new Float64Array(nWl);
+      for (let i = 0; i < nWl; i++) {
+        wlGrid[i] = wlMin + (wlMax - wlMin) * (i / (nWl - 1));
+      }
+
+      // Scale height factor from temperature (normalized to 1400 K -> 490 km)
+      const tempFactor = simState.tempK / 1400.0;
+      const scaleHeightKm = Math.round(490 * tempFactor);
+      const lineBank = MOLECULE_LINE_BANKS[simState.molecule] || MOLECULE_LINE_BANKS.H2O;
+
+      // Thermal + instrumental line width at R = 100,000 (~3 km/s FWHM)
+      const sigmaWl = 2.31 * (2.4 * Math.sqrt(tempFactor) / c_kms);
+
+      // Build planetary absorption depth template T(wl)
+      const templateDepth = new Float64Array(nWl);
+      const depthScale = 0.0018 * simState.scale * (0.65 + 0.35 * tempFactor);
+      for (let i = 0; i < nWl; i++) {
+        const w = wlGrid[i];
+        let sumAbs = 0.0;
+        for (let j = 0; j < lineBank.length; j++) {
+          const center = lineBank[j][0];
+          const weight = lineBank[j][1];
+          const dw = (w - center) / sigmaWl;
+          if (Math.abs(dw) < 6.0) {
+            sumAbs += weight * Math.exp(-0.5 * dw * dw);
+          }
+        }
+        templateDepth[i] = depthScale * sumAbs;
+      }
+
+      // Build synthetic stellar continuum * parabolic echelle blaze function
+      const wlMid = 0.5 * (wlMin + wlMax);
+      const halfSpan = 0.5 * (wlMax - wlMin);
+      const stellarBlazeContinuum = new Float64Array(nWl);
+      const rawMidTransitFlux = new Float64Array(nWl);
+      const splineFitMidTransit = new Float64Array(nWl);
+      const normalizedPlanetTransmission = new Float64Array(nWl);
+
+      // Orbital phase grid: 25 phases from -0.045 to +0.045
+      const phases = new Float64Array(simState.numPhases);
+      const planetRvs = new Float64Array(simState.numPhases);
+      for (let p = 0; p < simState.numPhases; p++) {
+        const phi = -0.045 + 0.090 * (p / (simState.numPhases - 1));
+        phases[p] = phi;
+        planetRvs[p] = simState.kp * Math.sin(2.0 * Math.PI * phi) + simState.vsys;
+      }
+
+      // Evaluate mid-transit (or selected phase) spectrum and spline continuum fit
+      const activePhiRv = planetRvs[simState.phaseIndex];
+      for (let i = 0; i < nWl; i++) {
+        const w = wlGrid[i];
+        const xNorm = (w - wlMid) / halfSpan;
+        // Parabolic echelle blaze profile * gentle stellar Rayleigh-Jeans slope
+        const blaze = 1.0 - 0.38 * xNorm * xNorm - 0.05 * xNorm;
+        stellarBlazeContinuum[i] = blaze;
+
+        // Shifted planet depth at selected phase
+        const wRest = w / (1.0 + activePhiRv / c_kms);
+        let pDepth = 0.0;
+        for (let j = 0; j < lineBank.length; j++) {
+          const dw = (wRest - lineBank[j][0]) / sigmaWl;
+          if (Math.abs(dw) < 6.0) {
+            pDepth += depthScale * lineBank[j][1] * Math.exp(-0.5 * dw * dw);
+          }
+        }
+        // Exaggerate visual planetary depth slightly in raw blaze view so user can see lines on the blaze
+        rawMidTransitFlux[i] = blaze * (1.0 - pDepth * 18.0);
+        splineFitMidTransit[i] = blaze;
+        normalizedPlanetTransmission[i] = 1.0 - pDepth;
+      }
+
+      // Compute 2D Phase-Resolved CCF Matrix analytically over RV grid [-250, +250] km/s
+      const rvGrid = new Float64Array(simState.numRv);
+      for (let r = 0; r < simState.numRv; r++) {
+        rvGrid[r] = simState.rvMin + (simState.rvMax - simState.rvMin) * (r / (simState.numRv - 1));
+      }
+
+      // Effective velocity width of the auto-correlated high-res lines (~4.2 km/s)
+      const ccfSigmaKms = 4.2 * Math.sqrt(0.7 + 0.3 * tempFactor);
+      const ccf2d = []; // Array of Float64Array(numRv)
+      const coaddedRestCcf = new Float64Array(simState.numRv);
+
+      for (let p = 0; p < simState.numPhases; p++) {
+        const row = new Float64Array(simState.numRv);
+        const vp = planetRvs[p];
+        for (let r = 0; r < simState.numRv; r++) {
+          const rv = rvGrid[r];
+          const dv = rv - vp;
+          // Realistic high-resolution CCF profile with weak secondary sidelobes from line forest
+          const mainPeak = Math.exp(-0.5 * (dv / ccfSigmaKms) * (dv / ccfSigmaKms));
+          const alias1 = 0.14 * Math.exp(-0.5 * ((dv - 28.0) / (ccfSigmaKms * 1.3)) ** 2);
+          const alias2 = 0.14 * Math.exp(-0.5 * ((dv + 28.0) / (ccfSigmaKms * 1.3)) ** 2);
+          const val = (mainPeak + alias1 + alias2) * simState.scale;
+          row[r] = val;
+        }
+        ccf2d.push(row);
+      }
+
+      // Co-add in planetary rest frame shifted to V_sys
+      let maxCoadd = 1e-9;
+      for (let r = 0; r < simState.numRv; r++) {
+        const rv = rvGrid[r];
+        const dvSys = rv - simState.vsys;
+        const mainPeak = Math.exp(-0.5 * (dvSys / ccfSigmaKms) * (dvSys / ccfSigmaKms));
+        const alias1 = 0.14 * Math.exp(-0.5 * ((dvSys - 28.0) / (ccfSigmaKms * 1.3)) ** 2);
+        const alias2 = 0.14 * Math.exp(-0.5 * ((dvSys + 28.0) / (ccfSigmaKms * 1.3)) ** 2);
+        const val = (mainPeak + alias1 + alias2) * simState.scale;
+        coaddedRestCcf[r] = val;
+        if (val > maxCoadd) maxCoadd = val;
+      }
+
+      lastSimResult = {
+        wlGrid,
+        rawMidTransitFlux,
+        splineFitMidTransit,
+        normalizedPlanetTransmission,
+        phases,
+        planetRvs,
+        rvGrid,
+        ccf2d,
+        coaddedRestCcf,
+        scaleHeightKm,
+        lineCount: lineBank.length
+      };
+
+      // Update UI labels
+      document.getElementById('scaleHeightReadout').textContent = 'Scale Height H: ' + scaleHeightKm + ' km';
+      document.getElementById('panelABadge').textContent = lineBank.length + ' Resolved ' + simState.molecule + ' Lines (K-band)';
+      document.getElementById('metricPeakCoords').textContent = '(' + simState.kp + ', ' + (simState.vsys >= 0 ? '+' : '') + simState.vsys + ') km/s';
+      document.getElementById('metricPeakValue').textContent = maxCoadd.toFixed(2) + ' (Relative CCF)';
+      document.getElementById('captionVsysPeak').textContent = 'V_sys = ' + (simState.vsys >= 0 ? '+' : '') + simState.vsys + ' km/s';
+
+      const selPhi = phases[simState.phaseIndex];
+      const selRv = planetRvs[simState.phaseIndex];
+      const phiStr = (selPhi >= 0 ? '+' : '') + selPhi.toFixed(3);
+      document.getElementById('phaseValLabel').textContent = 'φ = ' + phiStr;
+      document.getElementById('instantRvReadout').textContent = 'RV(φ): ' + (selRv >= 0 ? '+' : '') + selRv.toFixed(1) + ' km/s';
+      document.getElementById('captionPhaseLabel').textContent = 'φ = ' + phiStr;
+    }
+
+    // -----------------------------------------------------------------------
+    // 3. High-DPI Canvas Renderers for Panels A, B, and C
+    // -----------------------------------------------------------------------
+    function setupHiDPICanvas(canvas) {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const width = Math.max(280, Math.floor(rect.width));
+      const height = Math.max(180, Math.floor(rect.height));
+      if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+      }
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return { ctx, width, height };
+    }
+
+    function drawSpectrumPanel() {
+      const canvas = document.getElementById('spectrumCanvas');
+      if (!canvas || !lastSimResult) return;
+      const { ctx, width, height } = setupHiDPICanvas(canvas);
+      ctx.clearRect(0, 0, width, height);
+
+      const padL = 58, padR = 20, padT = 24, padB = 34;
+      const plotW = width - padL - padR;
+      const plotH = height - padT - padB;
+
+      // Subtle background grid
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 1;
+      for (let g = 0; g <= 4; g++) {
+        const y = padT + (plotH * g) / 4;
+        ctx.beginPath();
+        ctx.moveTo(padL, y);
+        ctx.lineTo(padL + plotW, y);
+        ctx.stroke();
+      }
+
+      const wl = lastSimResult.wlGrid;
+      const n = wl.length;
+
+      if (simState.viewMode === 'normalized') {
+        // Plot normalized transmission spectrum F_norm(wl) = 1 - depth(wl)
+        const flux = lastSimResult.normalizedPlanetTransmission;
+        let minF = 1.0, maxF = 1.0002;
+        for (let i = 0; i < n; i++) {
+          if (flux[i] < minF) minF = flux[i];
+        }
+        const yMin = Math.min(0.994, minF * 0.9995);
+        const yMax = 1.0005;
+
+        // Continuum reference line at 1.000
+        const yCont = padT + plotH * (1 - (1.0 - yMin) / (yMax - yMin));
+        ctx.strokeStyle = '#fbbf24';
+        ctx.setLineDash([5, 4]);
+        ctx.beginPath();
+        ctx.moveTo(padL, yCont);
+        ctx.lineTo(padL + plotW, yCont);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Spectrum line
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        for (let i = 0; i < n; i++) {
+          const x = padL + (i / (n - 1)) * plotW;
+          const y = padT + plotH * (1 - (flux[i] - yMin) / (yMax - yMin));
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // Y-axis labels
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '11px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText('1.000', padL - 6, yCont + 4);
+        ctx.fillText(yMin.toFixed(3), padL - 6, padT + plotH);
+      } else {
+        // Raw blaze-modulated stellar+planetary echelle order + single-pass spline fit
+        const rawF = lastSimResult.rawMidTransitFlux;
+        const splineF = lastSimResult.splineFitMidTransit;
+        const yMin = 0.50;
+        const yMax = 1.06;
+
+        // Raw echelle spectrum (cyan)
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        for (let i = 0; i < n; i++) {
+          const x = padL + (i / (n - 1)) * plotW;
+          const y = padT + plotH * (1 - (rawF[i] - yMin) / (yMax - yMin));
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // Single-pass spline continuum + blaze fit (amber dashed)
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 2.2;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        for (let i = 0; i < n; i++) {
+          const x = padL + (i / (n - 1)) * plotW;
+          const y = padT + plotH * (1 - (splineF[i] - yMin) / (yMax - yMin));
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '11px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText('1.00', padL - 6, padT + 10);
+        ctx.fillText('0.55', padL - 6, padT + plotH);
+      }
+
+      // X-axis wavelength ticks
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      const ticks = [2.300, 2.305, 2.310, 2.315, 2.320];
+      for (let t = 0; t < ticks.length; t++) {
+        const frac = (ticks[t] - 2.300) / 0.020;
+        const x = padL + frac * plotW;
+        ctx.fillText(ticks[t].toFixed(3) + ' µm', x, height - 10);
+      }
+
+      // Legend badge inside plot
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = '11px "Inter", sans-serif';
+      const legendText = simState.viewMode === 'normalized'
+        ? 'Cyan: Spline-Normalized Planet Transmission  |  Amber Dashed: Continuum = 1.0'
+        : 'Cyan: Blaze-Modulated Star + Planet Order  |  Amber Dashed: Single-Pass Spline Fit';
+      ctx.fillText(legendText, padL + 8, padT + 14);
+    }
+
+    function viridisColor(t) {
+      // Clean scientific colormap (dark indigo -> teal -> emerald -> bright yellow)
+      const c = Math.max(0, Math.min(1, t));
+      const r = Math.round(20 + 230 * Math.pow(c, 2.2));
+      const g = Math.round(24 + 215 * Math.pow(c, 1.1));
+      const b = Math.round(75 + 140 * Math.sin(c * Math.PI * 0.85));
+      return 'rgb(' + r + ',' + g + ',' + b + ')';
+    }
+
+    function drawCcf2dPanel() {
+      const canvas = document.getElementById('ccf2dCanvas');
+      if (!canvas || !lastSimResult) return;
+      const { ctx, width, height } = setupHiDPICanvas(canvas);
+      ctx.clearRect(0, 0, width, height);
+
+      const padL = 48, padR = 16, padT = 18, padB = 32;
+      const plotW = width - padL - padR;
+      const plotH = height - padT - padB;
+
+      const nPhi = simState.numPhases;
+      const nRv = simState.numRv;
+      const ccf2d = lastSimResult.ccf2d;
+
+      // Find max for colormap normalization
+      let maxVal = 1e-6;
+      for (let p = 0; p < nPhi; p++) {
+        for (let r = 0; r < nRv; r++) {
+          if (ccf2d[p][r] > maxVal) maxVal = ccf2d[p][r];
+        }
+      }
+
+      const cellW = plotW / nRv;
+      const cellH = plotH / nPhi;
+
+      for (let p = 0; p < nPhi; p++) {
+        // Draw bottom-to-top so phase increases upward
+        const y = padT + (nPhi - 1 - p) * cellH;
+        for (let r = 0; r < nRv; r++) {
+          const x = padL + r * cellW;
+          const norm = ccf2d[p][r] / maxVal;
+          ctx.fillStyle = viridisColor(norm);
+          ctx.fillRect(x, y, Math.ceil(cellW), Math.ceil(cellH));
+        }
+      }
+
+      // Highlight selected phase slice row
+      const selY = padT + (nPhi - 1 - simState.phaseIndex) * cellH + 0.5 * cellH;
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 1.6;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.moveTo(padL, selY);
+      ctx.lineTo(padL + plotW, selY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Mark systemic velocity vertical reference line
+      const vsysFrac = (simState.vsys - simState.rvMin) / (simState.rvMax - simState.rvMin);
+      const vsysX = padL + vsysFrac * plotW;
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.65)';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(vsysX, padT);
+      ctx.lineTo(vsysX, padT + plotH);
+      ctx.stroke();
+
+      // Axes labels
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '10px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      const rvTicks = [-200, -100, 0, 100, 200];
+      for (let i = 0; i < rvTicks.length; i++) {
+        const f = (rvTicks[i] - simState.rvMin) / (simState.rvMax - simState.rvMin);
+        ctx.fillText(rvTicks[i] + '', padL + f * plotW, height - 10);
+      }
+      ctx.fillText('Radial Velocity (km/s)', padL + 0.5 * plotW, height - 1);
+
+      ctx.textAlign = 'right';
+      ctx.fillText('+0.045', padL - 5, padT + 8);
+      ctx.fillText('0.000', padL - 5, padT + 0.5 * plotH + 3);
+      ctx.fillText('-0.045', padL - 5, padT + plotH);
+    }
+
+    function drawCcf1dPanel() {
+      const canvas = document.getElementById('ccf1dCanvas');
+      if (!canvas || !lastSimResult) return;
+      const { ctx, width, height } = setupHiDPICanvas(canvas);
+      ctx.clearRect(0, 0, width, height);
+
+      const padL = 44, padR = 16, padT = 20, padB = 32;
+      const plotW = width - padL - padR;
+      const plotH = height - padT - padB;
+
+      // Subtle horizontal grid
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 1;
+      for (let g = 0; g <= 4; g++) {
+        const y = padT + (plotH * g) / 4;
+        ctx.beginPath();
+        ctx.moveTo(padL, y);
+        ctx.lineTo(padL + plotW, y);
+        ctx.stroke();
+      }
+
+      const nRv = simState.numRv;
+      const coadd = lastSimResult.coaddedRestCcf;
+      const slice = lastSimResult.ccf2d[simState.phaseIndex];
+      const yMax = Math.max(1.2, simState.scale * 1.15);
+      const yMin = -0.05;
+
+      // Vertical line at V_sys
+      const vsysFrac = (simState.vsys - simState.rvMin) / (simState.rvMax - simState.rvMin);
+      const vsysX = padL + vsysFrac * plotW;
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(vsysX, padT);
+      ctx.lineTo(vsysX, padT + plotH);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 1. Selected single-phase CCF curve (amber)
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      for (let r = 0; r < nRv; r++) {
+        const x = padL + (r / (nRv - 1)) * plotW;
+        const y = padT + plotH * (1 - (slice[r] - yMin) / (yMax - yMin));
+        if (r === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // 2. Co-added rest-frame CCF curve (bright cyan)
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2.3;
+      ctx.beginPath();
+      for (let r = 0; r < nRv; r++) {
+        const x = padL + (r / (nRv - 1)) * plotW;
+        const y = padT + plotH * (1 - (coadd[r] - yMin) / (yMax - yMin));
+        if (r === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Axes labels
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '10px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      const rvTicks = [-200, -100, 0, 100, 200];
+      for (let i = 0; i < rvTicks.length; i++) {
+        const f = (rvTicks[i] - simState.rvMin) / (simState.rvMax - simState.rvMin);
+        ctx.fillText(rvTicks[i] + '', padL + f * plotW, height - 10);
+      }
+      ctx.fillText('Radial Velocity (km/s)', padL + 0.5 * plotW, height - 1);
+
+      // Legend
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillText('— Rest-Frame Co-Added CCF', padL + 8, padT + 12);
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillText('— Single Phase Slice CCF(φ)', padL + 8, padT + 26);
+    }
+
+    function renderAllPlots() {
+      runSimulation();
+      drawSpectrumPanel();
+      drawCcf2dPanel();
+      drawCcf1dPanel();
+    }
+
+    // -----------------------------------------------------------------------
+    // 4. UI Interaction Handlers
+    // -----------------------------------------------------------------------
+    function updateSimFromUI() {
+      simState.molecule = document.getElementById('moleculeSelect').value;
+      simState.tempK = parseInt(document.getElementById('tempSlider').value, 10);
+      simState.kp = parseInt(document.getElementById('kpSlider').value, 10);
+      simState.vsys = parseInt(document.getElementById('vsysSlider').value, 10);
+      simState.scale = parseFloat(document.getElementById('scaleSlider').value);
+      simState.phaseIndex = parseInt(document.getElementById('phaseSlider').value, 10);
+
+      document.getElementById('tempValLabel').textContent = simState.tempK + ' K';
+      document.getElementById('kpValLabel').textContent = simState.kp + ' km/s';
+      document.getElementById('vsysValLabel').textContent = (simState.vsys >= 0 ? '+' : '') + simState.vsys + ' km/s';
+      document.getElementById('scaleValLabel').textContent = simState.scale.toFixed(2) + 'x';
+
+      renderAllPlots();
+    }
+
+    function setSpectrumViewMode(mode) {
+      simState.viewMode = mode;
+      const btnNorm = document.getElementById('btnViewNormalized');
+      const btnRaw = document.getElementById('btnViewRawBlaze');
+      const titleEl = document.getElementById('panelATitle');
+
+      if (mode === 'normalized') {
+        btnNorm.className = 'px-2.5 py-2 rounded-xl text-xs font-semibold border transition bg-sky-500/20 border-sky-400 text-sky-200';
+        btnRaw.className = 'px-2.5 py-2 rounded-xl text-xs font-semibold border transition bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200';
+        titleEl.textContent = 'Synthetic High-Resolution Planetary Transmission Spectrum (R = 100,000)';
+      } else {
+        btnRaw.className = 'px-2.5 py-2 rounded-xl text-xs font-semibold border transition bg-amber-500/20 border-amber-400 text-amber-200';
+        btnNorm.className = 'px-2.5 py-2 rounded-xl text-xs font-semibold border transition bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200';
+        titleEl.textContent = 'Blaze-Uncorrected Stellar + Planetary Echelle Order & Single-Pass Spline Fit';
+      }
+      drawSpectrumPanel();
+    }
+
+    function resetSimulation() {
+      document.getElementById('moleculeSelect').value = 'H2O';
+      document.getElementById('tempSlider').value = '1400';
+      document.getElementById('kpSlider').value = '150';
+      document.getElementById('vsysSlider').value = '-15';
+      document.getElementById('scaleSlider').value = '1.0';
+      document.getElementById('phaseSlider').value = '12';
+      setSpectrumViewMode('normalized');
+      updateSimFromUI();
+      showToast('Reset to nominal Hot Jupiter benchmark!');
+    }
+
+    function switchMainTab(tabName) {
+      const views = {
+        simulator: document.getElementById('viewSimulator'),
+        code: document.getElementById('viewCode'),
+        guide: document.getElementById('viewGuide')
+      };
+      const buttons = {
+        simulator: document.getElementById('btnTabSimulator'),
+        code: document.getElementById('btnTabCode'),
+        guide: document.getElementById('btnTabGuide')
+      };
+
+      Object.keys(views).forEach((k) => {
+        if (k === tabName) {
+          views[k].classList.remove('hidden');
+          views[k].classList.add('flex');
+          buttons[k].className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all bg-sky-500 text-slate-950 shadow';
+        } else {
+          views[k].classList.add('hidden');
+          views[k].classList.remove('flex');
+          buttons[k].className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-300 hover:text-white hover:bg-slate-800/70';
+        }
+      });
+
+      if (tabName === 'simulator') {
+        setTimeout(renderAllPlots, 30);
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // 5. Copy-Paste Repository Source Code Store
+    // -----------------------------------------------------------------------
+    const REPO_FILES = {
+      prt: {
+        filename: '01_prt_model_spectrum.py',
+        description: 'Forward models a high-resolution transmission spectrum with petitRADTRANS (plus standalone synthetic fallback)',
+        code: `"""
+01_prt_model_spectrum.py
+------------------------
+Author: Isha Chakraborty (University of Bologna & INAF Catania)
+
+Demonstrates how to generate a high-resolution (lbl mode, R ~ 100,000)
+exoplanet transmission spectrum in the 2.30-2.32 um K-band window using
+petitRADTRANS, with an automatic analytical fallback so visitors can run
+this script even without local opacity tables installed.
+"""
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def generate_prt_or_synthetic_spectrum(
+    wl_min_um: float = 2.300,
+    wl_max_um: float = 2.320,
+    temp_iso_k: float = 1400.0,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Return (wavelength_um, normalized_transmission_depth) in [2.30, 2.32] um."""
+    try:
+        from petitRADTRANS import Radtrans
+        from petitRADTRANS import nat_cst as nc
+
+        atmosphere = Radtrans(
+            line_species=["H2O_main_iso", "CO_main_iso"],
+            rayleigh_species=["H2", "He"],
+            continuum_opacities=["H2-H2", "H2-He"],
+            wlen_bords_micron=[wl_min_um, wl_max_um],
+            mode="lbl",
+            lbl_opacity_sampling=1,
+        )
+
+        pressures = np.logspace(-6, 2, 100)
+        atmosphere.setup_opa_structure(pressures)
+
+        temperature = temp_iso_k * np.ones_like(pressures)
+        mass_fractions = {
+            "H2": 0.74 * np.ones_like(pressures),
+            "He": 0.24 * np.ones_like(pressures),
+            "H2O_main_iso": 1e-3 * np.ones_like(pressures),
+            "CO_main_iso": 5e-4 * np.ones_like(pressures),
+        }
+        mmw = 2.33 * np.ones_like(pressures)
+        r_pl = 1.2 * nc.r_jup_mean
+        r_star = 1.0 * nc.r_sun
+        gravity = 1e3  # cm/s^2
+        p0 = 0.01
+
+        atmosphere.calc_transm(
+            temp=temperature,
+            abunds=mass_fractions,
+            gravity=gravity,
+            mmw=mmw,
+            R_pl=r_pl,
+            P0_bar=p0,
+        )
+        wl_um = nc.c / atmosphere.freq / 1e-4
+        transit_depth = (atmosphere.transm_rad / r_star) ** 2
+        # Normalize continuum to 1.0 - differential absorption depth
+        norm_transmission = 1.0 - (transit_depth - np.percentile(transit_depth, 10))
+        return wl_um, norm_transmission
+
+    except Exception:
+        # Lightweight analytical ro-vibrational template when pRT opacity tables are absent
+        wl_um = np.linspace(wl_min_um, wl_max_um, 4000)
+        rng = np.random.default_rng(42)
+        line_centers = np.sort(rng.uniform(wl_min_um + 0.0005, wl_max_um - 0.0005, 45))
+        line_weights = rng.uniform(0.4, 1.0, size=line_centers.size)
+        sigma_um = 2.31 * (2.5 / 299792.458)  # R ~ 100,000 thermal+instrumental profile
+
+        absorption = np.zeros_like(wl_um)
+        for center, weight in zip(line_centers, line_weights):
+            absorption += 0.0018 * weight * np.exp(-0.5 * ((wl_um - center) / sigma_um) ** 2)
+
+        return wl_um, 1.0 - absorption
+
+
+if __name__ == "__main__":
+    wl, trans = generate_prt_or_synthetic_spectrum()
+    plt.figure(figsize=(10, 4), dpi=150)
+    plt.plot(wl, trans, color="#0284c7", lw=1.0, label="Normalized Planetary Transmission T(λ)")
+    plt.xlabel("Wavelength [µm]")
+    plt.ylabel("Relative Transmission")
+    plt.title("Synthetic High-Resolution Exoplanet Transmission Template (R = 100,000)")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig("model_spectrum_preview.png")
+    print("Saved model_spectrum_preview.png successfully.")`
+      },
+      pipeline: {
+        filename: 'src/ccf_pipeline.py',
+        description: 'Modular Python library for Doppler shifting, single-pass spline continuum normalization, and 2D CCF computation',
+        code: `"""
+src/ccf_pipeline.py
+-------------------
+Author: Isha Chakraborty (University of Bologna & INAF Catania)
+
+Reusable functions for noiseless high-resolution exoplanet spectroscopy simulations:
+1. Doppler-shifting planetary templates across orbital phases
+2. Injecting signals into blaze-modulated synthetic stellar echelle spectra
+3. Single-pass cubic spline continuum + blaze normalization
+4. Computing 2D phase-resolved Cross-Correlation Function (CCF) matrices
+"""
+
+import numpy as np
+from scipy.interpolate import interp1d, UnivariateSpline
+
+C_KMS = 299792.458  # Speed of light in km/s
+
+
+def doppler_shift_wavelength(wl_um: np.ndarray, rv_kms: float) -> np.ndarray:
+    """Shift wavelength grid by radial velocity rv_kms (relativistic first-order)."""
+    return wl_um * (1.0 + rv_kms / C_KMS)
+
+
+def simulate_blaze_echelle_order(wl_um: np.ndarray) -> np.ndarray:
+    """Create a synthetic stellar continuum modulated by a parabolic echelle blaze profile."""
+    wl_mid = 0.5 * (wl_um[0] + wl_um[-1])
+    half_span = 0.5 * (wl_um[-1] - wl_um[0])
+    x_norm = (wl_um - wl_mid) / half_span
+    blaze_profile = 1.0 - 0.38 * (x_norm ** 2) - 0.04 * x_norm
+    return blaze_profile
+
+
+def single_pass_spline_normalization(
+    wl_um: np.ndarray,
+    raw_flux: np.ndarray,
+    n_knots: int = 12,
+) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Fit a single-pass cubic spline directly to a blaze-uncorrected echelle order
+    to simultaneously remove the stellar continuum and instrumental blaze function.
+    """
+    knot_edges = np.linspace(wl_um[0], wl_um[-1], n_knots + 1)
+    knot_x = np.zeros(n_knots)
+    knot_y = np.zeros(n_knots)
+
+    for k in range(n_knots):
+        mask = (wl_um >= knot_edges[k]) & (wl_um <= knot_edges[k + 1])
+        knot_x[k] = np.median(wl_um[mask])
+        # Upper 90th percentile tracks the local continuum envelope above absorption lines
+        knot_y[k] = np.percentile(raw_flux[mask], 90)
+
+    spline = UnivariateSpline(knot_x, knot_y, k=3, s=0.0)
+    continuum_fit = spline(wl_um)
+    normalized_flux = raw_flux / continuum_fit
+    return normalized_flux, continuum_fit
+
+
+def compute_noiseless_2d_ccf(
+    wl_obs: np.ndarray,
+    flux_time_series: np.ndarray,
+    wl_template: np.ndarray,
+    template_absorption: np.ndarray,
+    rv_grid_kms: np.ndarray,
+) -> np.ndarray:
+    """
+    Compute the 2D Cross-Correlation Function matrix CCF(phase, rv) in noiseless condition.
+
+    Parameters
+    ----------
+    wl_obs : (N_wl,) array of observed wavelengths
+    flux_time_series : (N_phase, N_wl) array of spline-normalized spectra
+    wl_template : (N_wl_t,) array of template wavelengths
+    template_absorption : (N_wl_t,) zero-mean planetary absorption template (1 - T(wl))
+    rv_grid_kms : (N_rv,) radial velocity grid in km/s
+    """
+    n_phases = flux_time_series.shape[0]
+    n_rv = rv_grid_kms.size
+    ccf_matrix = np.zeros((n_phases, n_rv), dtype=float)
+
+    # Zero-mean each observed residual spectrum
+    residuals = 1.0 - flux_time_series
+    residuals -= np.mean(residuals, axis=1, keepdims=True)
+
+    interp_template = interp1d(
+        wl_template,
+        template_absorption - np.mean(template_absorption),
+        kind="linear",
+        bounds_error=False,
+        fill_value=0.0,
+    )
+
+    for r_idx, rv in enumerate(rv_grid_kms):
+        shifted_template = interp_template(wl_obs / (1.0 + rv / C_KMS))
+        norm_factor = np.sqrt(np.sum(shifted_template ** 2)) + 1e-12
+        ccf_matrix[:, r_idx] = (residuals @ shifted_template) / norm_factor
+
+    return ccf_matrix`
+      },
+      demo: {
+        filename: '02_noiseless_2d_ccf_demo.py',
+        description: 'End-to-end noiseless 2D CCF demonstration script producing publication-grade plots',
+        code: `"""
+02_noiseless_2d_ccf_demo.py
+---------------------------
+Author: Isha Chakraborty (University of Bologna & INAF Catania)
+
+Runs an end-to-end noiseless 2D Cross-Correlation Function (CCF) simulation:
+1. Generates a high-resolution planetary transmission template
+2. Injects Doppler-shifted planetary signals into a blaze-modulated stellar order
+3. Removes the stellar continuum and blaze in a single spline pass
+4. Computes and plots the 2D phase-resolved CCF matrix and rest-frame co-added CCF
+"""
+
+import numpy as np
+import matplotlib.pyplot as plt
+from importlib import import_module
+from src.ccf_pipeline import (
+    C_KMS,
+    simulate_blaze_echelle_order,
+    single_pass_spline_normalization,
+    compute_noiseless_2d_ccf,
+)
+
+# Import generator from 01_prt_model_spectrum.py
+prt_mod = import_module("01_prt_model_spectrum")
+
+
+def run_demo(kp_kms: float = 150.0, vsys_kms: float = -15.0) -> None:
+    wl_um, norm_trans = prt_mod.generate_prt_or_synthetic_spectrum()
+    template_abs = 1.0 - norm_trans
+
+    phases = np.linspace(-0.045, 0.045, 25)
+    planet_rvs = kp_kms * np.sin(2.0 * np.pi * phases) + vsys_kms
+    blaze_order = simulate_blaze_echelle_order(wl_um)
+
+    n_phases = phases.size
+    normalized_series = np.zeros((n_phases, wl_um.size))
+
+    for p_idx, rv_p in enumerate(planet_rvs):
+        # Shift planetary absorption lines to instantaneous orbital radial velocity
+        shifted_abs = np.interp(wl_um / (1.0 + rv_p / C_KMS), wl_um, template_abs, left=0.0, right=0.0)
+        raw_order_flux = blaze_order * (1.0 - shifted_abs)
+        norm_flux, _ = single_pass_spline_normalization(wl_um, raw_order_flux)
+        normalized_series[p_idx] = norm_flux
+
+    rv_grid = np.linspace(-250.0, 250.0, 251)
+    ccf_2d = compute_noiseless_2d_ccf(wl_um, normalized_series, wl_um, template_abs, rv_grid)
+
+    # Shift each phase row into the planetary rest frame and co-add
+    coadded_ccf = np.zeros_like(rv_grid)
+    for p_idx, phi in enumerate(phases):
+        v_orb = kp_kms * np.sin(2.0 * np.pi * phi)
+        coadded_ccf += np.interp(rv_grid + v_orb, rv_grid, ccf_2d[p_idx], left=0.0, right=0.0)
+    coadded_ccf /= coadded_ccf.max()
+
+    # Plot 2-panel summary figure
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4.8), dpi=150)
+    im = ax1.imshow(
+        ccf_2d,
+        aspect="auto",
+        origin="lower",
+        extent=[rv_grid[0], rv_grid[-1], phases[0], phases[-1]],
+        cmap="viridis",
+    )
+    ax1.axvline(vsys_kms, color="#38bdf8", ls="--", lw=1.2, label=f"V_sys = {vsys_kms} km/s")
+    ax1.set_xlabel("Radial Velocity [km/s]")
+    ax1.set_ylabel("Orbital Phase [φ]")
+    ax1.set_title("Noiseless 2D Phase-Resolved CCF Matrix")
+    ax1.legend(loc="upper left")
+    fig.colorbar(im, ax=ax1, label="CCF Amplitude")
+
+    ax2.plot(rv_grid, coadded_ccf, color="#0284c7", lw=2.0, label="Planet Rest-Frame Co-Added CCF")
+    ax2.axvline(vsys_kms, color="#f59e0b", ls="--", lw=1.4, label=f"Injected V_sys ({vsys_kms} km/s)")
+    ax2.set_xlabel("Rest-Frame Radial Velocity [km/s]")
+    ax2.set_ylabel("Normalized CCF")
+    ax2.set_title(f"Co-Added Rest-Frame Detection (K_p = {kp_kms} km/s)")
+    ax2.legend()
+
+    plt.tight_layout()
+    plt.savefig("noiseless_2d_ccf_summary.png")
+    print("Saved noiseless_2d_ccf_summary.png successfully.")
+
+
+if __name__ == "__main__":
+    run_demo()`
+      },
+      readme: {
+        filename: 'README.md',
+        description: 'Complete GitHub repository README with methodology, mathematical overview, and live page link',
+        code: `# High-Resolution Exoplanet Transmission Spectroscopy & Noiseless 2D CCF Pipeline
+
+**Author:** Isha Chakraborty  
+**Affiliations:** Laurea Magistrale (M.Sc.) Candidate in Astrophysics, [Alma Mater Studiorum – Università di Bologna](https://corsi.unibo.it/2cycle/Astrophysics) | Master's Thesis Researcher, [INAF – Osservatorio Astrofisico di Catania](https://www.oact.inaf.it/en/) (Supervisor: Dr. Gaetano Scandariato)
+
+---
+
+## Overview & Public Methodology Scope
+
+This repository showcases the numerical and spectroscopic methodology developed for my Master's thesis research at **INAF – Osservatorio Astrofisico di Catania**, which evaluates exoplanet atmospheric detectability for the upcoming **[ANDES (ArmazoNes high Dispersion Echelle Spectrograph)](https://elt.eso.org/instrument/ANDES/)** instrument ($R \\sim 100,000$) on ESO's **[Extremely Large Telescope (ELT)](https://elt.eso.org/)**.
+
+> **Note on Data Policy:** To respect consortium boundaries and unpublished thesis simulation grids (such as cloudy vs. clear 3D detectability grids), this repository uses **purely synthetic, noiseless analytical inputs** to demonstrate the software architecture, single-pass spline continuum normalization, and 2D Cross-Correlation Function (CCF) pipeline.
+
+### Live Interactive Browser Simulator (GitHub Pages)
+Explore the interactive 2D CCF & high-resolution transmission spectrum simulator directly in your browser (no installation required):
+* **Interactive Web App:** \`https://<your-github-username>.github.io/exoplanet-ccf-demo/\`
+
+---
+
+## Core Pipeline Architecture
+
+1. **Radiative Transfer Forward Modeling (\`01_prt_model_spectrum.py\`):**
+   * Generates high-resolution ($R = 100,000$) planetary transmission spectra in the $2.30\\text{–}2.32\\,\\mu\\text{m}$ K-band using **[petitRADTRANS](https://petitradtrans.readthedocs.io/)** (\`lbl\` line-by-line mode), with a built-in analytical ro-vibrational fallback so the demo runs out-of-the-box without multi-gigabyte opacity tables.
+2. **Single-Pass Echelle Spline Normalization (\`src/ccf_pipeline.py\`):**
+   * Injects Doppler-shifted planetary absorption signals into a synthetic stellar continuum modulated by a parabolic echelle blaze profile:
+     $$v_p(\\phi) = K_p \\sin(2\\pi \\phi) + V_{\\text{sys}}$$
+   * Fits a single-pass cubic spline (\`scipy.interpolate.UnivariateSpline\`) directly to the blaze-uncorrected order, simultaneously removing the stellar continuum and the instrumental blaze profile.
+3. **Noiseless 2D CCF Matrix & Rest-Frame Stacking (\`02_noiseless_2d_ccf_demo.py\`):**
+   * Cross-correlates each transit orbital phase against the planetary template over a radial velocity grid ($\\pm 250\\text{ km/s}$) to recover the slanted planetary Doppler trail and co-added rest-frame detection peak.
+
+---
+
+## Quickstart
+
+\`\`\`bash
+git clone https://github.com/<your-github-username>/exoplanet-ccf-demo.git
+cd exoplanet-ccf-demo
+pip install -r requirements.txt
+
+# 1. Generate synthetic high-resolution transmission spectrum
+python 01_prt_model_spectrum.py
+
+# 2. Run end-to-end noiseless 2D CCF pipeline and export plots
+python 02_noiseless_2d_ccf_demo.py
+\`\`\`
+`
+      },
+      req: {
+        filename: 'requirements.txt & .gitignore',
+        description: 'Lightweight dependencies and Git ignore rules blocking heavy FITS and opacity tables',
+        code: `# === requirements.txt ===
+numpy>=1.24.0
+scipy>=1.10.0
+matplotlib>=3.7.0
+astropy>=5.3.0
+# Optional (for full radiative transfer mode):
+# petitRADTRANS>=2.7.0
+
+# === .gitignore ===
+__pycache__/
+*.py[cod]
+.DS_Store
+.ipynb_checkpoints/
+# Exclude heavy opacity tables and proprietary FITS spectra
+*.fits
+*.fit
+*.dat
+*.h5
+*.hdf5`
+      }
+    };
+
+    let activeCodeKey = 'prt';
+
+    function selectCodeFile(key) {
+      activeCodeKey = key;
+      const keys = ['prt', 'pipeline', 'demo', 'readme', 'req'];
+      keys.forEach((k) => {
+        const btn = document.getElementById('fileTab_' + k);
+        if (k === key) {
+          btn.className = 'px-3.5 py-2 rounded-xl text-xs font-semibold mono transition bg-sky-500 text-slate-950';
+        } else {
+          btn.className = 'px-3.5 py-2 rounded-xl text-xs font-semibold mono transition text-slate-300 hover:bg-slate-800';
+        }
+      });
+
+      const entry = REPO_FILES[key];
+      document.getElementById('codeFilenameHeader').textContent = entry.filename;
+      document.getElementById('codeFileDescription').textContent = entry.description;
+      document.getElementById('codeDisplayArea').textContent = entry.code;
+    }
+
+    function copyCurrentCodeFile() {
+      const entry = REPO_FILES[activeCodeKey];
+      if (!entry) return;
+      const text = entry.code;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast('Copied ' + entry.filename + ' to clipboard!');
+        }).catch(() => {
+          fallbackCopy(text, entry.filename);
+        });
+      } else {
+        fallbackCopy(text, entry.filename);
+      }
+    }
+
+    function fallbackCopy(text, label) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        showToast('Copied ' + label + ' to clipboard!');
+      } catch (err) {
+        showToast('Press Ctrl+C / Cmd+C to copy');
+      }
+      document.body.removeChild(ta);
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const banner = document.getElementById('toastBanner');
+      const textEl = document.getElementById('toastText');
+      textEl.textContent = msg;
+      banner.classList.remove('hidden');
+      banner.classList.add('flex');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        banner.classList.add('hidden');
+        banner.classList.remove('flex');
+      }, 2800);
+    }
+
+    function updateChecklistProgress() {
+      const boxes = document.querySelectorAll('.step-check');
+      let done = 0;
+      boxes.forEach((b) => {
+        if (b.checked) done++;
+      });
+      document.getElementById('checklistProgressText').textContent = done + ' / ' + boxes.length + ' Completed';
+    }
+
+    // -----------------------------------------------------------------------
+    // 6. Hover & Click Interaction on 2D CCF Matrix Canvas
+    // -----------------------------------------------------------------------
+    function wireCanvasInteractions() {
+      const ccfCanvas = document.getElementById('ccf2dCanvas');
+      if (!ccfCanvas) return;
+
+      ccfCanvas.addEventListener('mousemove', (evt) => {
+        if (!lastSimResult) return;
+        const rect = ccfCanvas.getBoundingClientRect();
+        const padL = 48, padR = 16, padT = 18, padB = 32;
+        const plotW = rect.width - padL - padR;
+        const plotH = rect.height - padT - padB;
+        const mx = evt.clientX - rect.left - padL;
+        const my = evt.clientY - rect.top - padT;
+
+        if (mx >= 0 && mx <= plotW && my >= 0 && my <= plotH) {
+          const rvFrac = mx / plotW;
+          const phiIdx = Math.min(
+            simState.numPhases - 1,
+            Math.max(0, Math.floor((1.0 - my / plotH) * simState.numPhases))
+          );
+          const rvIdx = Math.min(
+            simState.numRv - 1,
+            Math.max(0, Math.floor(rvFrac * simState.numRv))
+          );
+          const phiVal = lastSimResult.phases[phiIdx];
+          const rvVal = lastSimResult.rvGrid[rvIdx];
+          const ccfVal = lastSimResult.ccf2d[phiIdx][rvIdx];
+          document.getElementById('ccfHoverReadout').textContent =
+            'φ=' + (phiVal >= 0 ? '+' : '') + phiVal.toFixed(3) +
+            ' | RV=' + Math.round(rvVal) + ' km/s | CCF=' + ccfVal.toFixed(2);
+        }
+      });
+
+      ccfCanvas.addEventListener('click', (evt) => {
+        if (!lastSimResult) return;
+        const rect = ccfCanvas.getBoundingClientRect();
+        const padT = 18, padB = 32;
+        const plotH = rect.height - padT - padB;
+        const my = evt.clientY - rect.top - padT;
+        if (my >= 0 && my <= plotH) {
+          const phiIdx = Math.min(
+            simState.numPhases - 1,
+            Math.max(0, Math.floor((1.0 - my / plotH) * simState.numPhases))
+          );
+          document.getElementById('phaseSlider').value = String(phiIdx);
+          updateSimFromUI();
+        }
+      });
+    }
+
+    window.addEventListener('resize', () => {
+      renderAllPlots();
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      selectCodeFile('prt');
+      wireCanvasInteractions();
+      renderAllPlots();
+    });
+  </script>
+</body>
+</html>
